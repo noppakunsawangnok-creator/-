@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เกม “นักล่าอุปกรณ์คอมพิวเตอร์” ม.6</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Prompt', sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 min-h-screen text-slate-100 flex items-center justify-center p-4">
+
+    <div id="app" class="w-full max-w-2xl bg-slate-950/80 backdrop-blur-xl border border-indigo-500/30 rounded-2xl shadow-2xl overflow-hidden p-6 md:p-8">
+        
+        <!-- Welcome Screen -->
+        <div id="welcome-screen" class="text-center py-6">
+            <div class="inline-block p-4 bg-indigo-600/20 border border-indigo-500/40 rounded-full mb-4 text-indigo-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-bold text-white mb-2">🎯 เกม “นักล่าอุปกรณ์คอมพิวเตอร์”</h1>
+            <p class="text-indigo-200/80 mb-6 text-sm md:text-base">ระดับชั้นมัธยมศึกษาปีที่ 6 - วิชาคอมพิวเตอร์ (4 ตัวเลือก)</p>
+            <button onclick="startGame()" class="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/30 transition transform hover:-translate-y-0.5 cursor-pointer">
+                เริ่มเล่นเกม
+            </button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden">
+            <div class="flex justify-between items-center mb-6 border-b border-indigo-500/20 pb-4">
+                <span id="question-counter" class="text-xs md:text-sm font-medium text-indigo-400 bg-indigo-950 px-3 py-1 rounded-full border border-indigo-500/30">คำถามที่ 1/10</span>
+                <span id="score-display" class="text-xs md:text-sm font-medium text-emerald-400 bg-emerald-950 px-3 py-1 rounded-full border border-emerald-500/30">คะแนน: 0</span>
+            </div>
+
+            <h2 id="question-text" class="text-lg md:text-xl font-semibold text-white mb-6 leading-relaxed"></h2>
+
+            <div id="options-container" class="space-y-3 mb-6"></div>
+
+            <div id="explanation-container" class="hidden mb-6 p-4 rounded-xl bg-slate-900/90 border border-indigo-500/30 text-sm text-slate-300">
+                <p class="font-semibold text-indigo-400 mb-1">✅ เฉลยและคำอธิบาย:</p>
+                <p id="explanation-text"></p>
+            </div>
+
+            <button id="next-btn" onclick="nextQuestion()" class="hidden w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/30 transition cursor-pointer">
+                ข้อถัดไป
+            </button>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="hidden text-center py-6">
+            <div class="inline-block p-4 bg-emerald-600/20 border border-emerald-500/40 rounded-full mb-4 text-emerald-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">🏆 สรุปผลคะแนนของคุณ</h2>
+            <p id="final-score" class="text-xl text-indigo-300 mb-2 font-semibold"></p>
+            <p id="result-badge" class="text-lg text-amber-400 mb-4 font-bold"></p>
+            <p id="result-message" class="text-slate-300 mb-6 text-sm md:text-base"></p>
+            <button onclick="restartGame()" class="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-600/30 transition cursor-pointer">
+                เล่นใหม่อีกครั้ง
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "ข้อที่ 1: อุปกรณ์ใดทำหน้าที่ประมวลผลคำสั่งและคำนวณข้อมูลหลักของคอมพิวเตอร์?",
+                options: ["A. RAM", "B. CPU", "C. Monitor", "D. Keyboard"],
+                correct: 1,
+                explanation: "B. CPU (หน่วยประมวลผลกลาง) ทำหน้าที่ประมวลผลคำสั่งและคำนวณข้อมูล"
+            },
+            {
+                question: "ข้อที่ 2: อุปกรณ์ใดใช้สำหรับเก็บข้อมูลชั่วคราวขณะที่คอมพิวเตอร์กำลังทำงาน?",
+                options: ["A. RAM", "B. HDD", "C. Printer", "D. Mouse"],
+                correct: 0,
+                explanation: "A. RAM ใช้สำหรับเก็บข้อมูลชั่วคราวขณะคอมพิวเตอร์ทำงาน (ข้อมูลจะหายเมื่อปิดเครื่อง)"
+            },
+            {
+                question: "ข้อที่ 3: อุปกรณ์ใดใช้แสดงผลภาพและข้อความจากคอมพิวเตอร์?",
+                options: ["A. Scanner", "B. Monitor", "C. Microphone", "D. Keyboard"],
+                correct: 1,
+                explanation: "B. Monitor (จอภาพ) ใช้แสดงผลข้อมูลภาพและข้อความให้ผู้ใช้เห็น"
+            },
+            {
+                question: "ข้อที่ 4: อุปกรณ์ใดเหมาะสำหรับจัดเก็บข้อมูลแบบถาวร?",
+                options: ["A. RAM", "B. CPU", "C. SSD", "D. Mouse"],
+                correct: 2,
+                explanation: "C. SSD เป็นอุปกรณ์จัดเก็บข้อมูลสำรองที่มีความเร็วสูงและเก็บข้อมูลแบบถาวร"
+            },
+            {
+                question: "ข้อที่ 5: อุปกรณ์ใดใช้ป้อนตัวอักษรและตัวเลขเข้าสู่คอมพิวเตอร์?",
+                options: ["A. Keyboard", "B. Speaker", "C. Monitor", "D. Projector"],
+                correct: 0,
+                explanation: "A. Keyboard (แป้นพิมพ์) เป็นอุปกรณ์รับข้อมูลประเภทตัวอักษรและตัวเลข"
+            },
+            {
+                question: "ข้อที่ 6: GPU มีหน้าที่สำคัญเกี่ยวกับงานใด?",
+                options: ["A. พิมพ์เอกสาร", "B. ประมวลผลกราฟิกและภาพ", "C. บันทึกเสียง", "D. เชื่อมต่ออินเทอร์เน็ต"],
+                correct: 1,
+                explanation: "B. ประมวลผลกราฟิกและภาพ ช่วยแบ่งเบาภาระและสร้างภาพ 3 มิติบนหน้าจอ"
+            },
+            {
+                question: "ข้อที่ 7: อุปกรณ์ใดใช้เชื่อมต่อคอมพิวเตอร์เข้ากับเครือข่ายหรืออินเทอร์เน็ต?",
+                options: ["A. Network Card", "B. Speaker", "C. Webcam", "D. Printer"],
+                correct: 0,
+                explanation: "A. Network Card (การ์ดแลน/การ์ดเครือข่าย) ใช้เชื่อมต่อระบบเน็ตเวิร์กและอินเทอร์เน็ต"
+            },
+            {
+                question: "ข้อที่ 8: อุปกรณ์ใดใช้สำหรับพิมพ์ข้อมูลจากคอมพิวเตอร์ลงบนกระดาษ?",
+                options: ["A. Scanner", "B. Printer", "C. Monitor", "D. Webcam"],
+                correct: 1,
+                explanation: "B. Printer (เครื่องพิมพ์) ใช้แสดงผลข้อมูลออกทางกระดาษ"
+            },
+            {
+                question: "ข้อที่ 9: อุปกรณ์ใดใช้รับภาพหรือวิดีโอเข้าสู่คอมพิวเตอร์?",
+                options: ["A. Webcam", "B. Speaker", "C. Keyboard", "D. Projector"],
+                correct: 0,
+                explanation: "A. Webcam (กล้องเว็บแคม) ใช้จับภาพและวิดีโอส่งเข้าสู่ระบบคอมพิวเตอร์"
+            },
+            {
+                question: "ข้อที่ 10: ข้อใดเป็นอุปกรณ์รับข้อมูล (Input Device)?",
+                options: ["A. Monitor", "B. Speaker", "C. Keyboard", "D. Printer"],
+                correct: 2,
+                explanation: "C. Keyboard เป็นอุปกรณ์รับข้อมูลเข้าสู่ระบบ (Input Device ส่วนข้ออื่นเป็น Output)"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const questionCounter = document.getElementById('question-counter');
+        const scoreDisplay = document.getElementById('score-display');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const explanationContainer = document.getElementById('explanation-container');
+        const explanationText = document.getElementById('explanation-text');
+        const nextBtn = document.getElementById('next-btn');
+
+        function startGame() {
+            welcomeScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            answered = false;
+            explanationContainer.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            
+            const q = questions[currentQuestionIndex];
+            questionCounter.textContent = `คำถามที่ ${currentQuestionIndex + 1}/${questions.length}`;
+            scoreDisplay.textContent = `คะแนน: ${score}`;
+            questionText.textContent = q.question;
+            
+            optionsContainer.innerHTML = '';
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left p-4 rounded-xl bg-slate-900/60 hover:bg-indigo-950/60 border border-indigo-500/20 hover:border-indigo-500/50 transition font-medium text-slate-200 cursor-pointer flex items-center justify-between';
+                btn.innerHTML = `<span>${opt}</span>`;
+                btn.onclick = () => selectOption(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectOption(selectedIndex, selectedBtn) {
+            if (answered) return;
+            answered = true;
+
+            const q = questions[currentQuestionIndex];
+            const optionButtons = optionsContainer.children;
+
+            if (selectedIndex === q.correct) {
+                selectedBtn.classList.remove('bg-slate-900/60', 'hover:bg-indigo-950/60', 'border-indigo-500/20');
+                selectedBtn.classList.add('bg-emerald-950/80', 'border-emerald-500', 'text-emerald-200');
+                score += 10;
+                scoreDisplay.textContent = `คะแนน: ${score}`;
+            } else {
+                selectedBtn.classList.remove('bg-slate-900/60', 'hover:bg-indigo-950/60', 'border-indigo-500/20');
+                selectedBtn.classList.add('bg-rose-950/80', 'border-rose-500', 'text-rose-200');
+                optionButtons[q.correct].classList.remove('bg-slate-900/60', 'hover:bg-indigo-950/60', 'border-indigo-500/20');
+                optionButtons[q.correct].classList.add('bg-emerald-950/80', 'border-emerald-500', 'text-emerald-200');
+            }
+
+            Array.from(optionButtons).forEach(btn => btn.disabled = true);
+            explanationText.textContent = q.explanation;
+            explanationContainer.classList.remove('hidden');
+            nextBtn.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            document.getElementById('final-score').textContent = `คุณได้คะแนนรวม ${score} จาก 100 คะแนน`;
+            
+            let badge = "";
+            let message = "";
+            if (score >= 90) {
+                badge = "🥇 เซียนคอมพิวเตอร์";
+                message = "ยอดเยี่ยมมาก! คุณมีความเข้าใจเรื่องอุปกรณ์คอมพิวเตอร์ในระดับดีเยี่ยม!";
+            } else if (score >= 70) {
+                badge = "🥈 เก่งมาก";
+                message = "ทำได้ดีเยี่ยม! มีความรู้ความเข้าใจฮาร์ดแวร์ในเกณฑ์ที่ดี";
+            } else if (score >= 50) {
+                badge = "🥉 พอใช้";
+                message = "ทำได้ดีพอใช้ ลองทบทวนเนื้อหาเกี่ยวกับอุปกรณ์คอมพิวเตอร์เพิ่มเติมอีกนิดนะ";
+            } else {
+                badge = "📚 ลองทบทวนบทเรียนอีกครั้ง";
+                message = "สู้ๆ ครับ! ลองอ่านทบทวนเนื้อหารายวิชาคอมพิวเตอร์แล้วกลับมาเล่นใหม่อีกรอบนะ";
+            }
+            document.getElementById('result-badge').textContent = badge;
+            document.getElementById('result-message').textContent = message;
+        }
+
+        function restartGame() {
+            resultScreen.classList.add('hidden');
+            welcomeScreen.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
